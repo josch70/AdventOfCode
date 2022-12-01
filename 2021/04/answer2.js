@@ -3,74 +3,73 @@ var fs = require("fs");
 
 const inputarray = fs
     .readFileSync(path.resolve(__dirname, "input.txt"), "utf-8")
-    .split('\n')
+    .split('\n');
     // .map(Number);
 
-//Sort array
-inputarray.sort();
+const numbers = inputarray[0].split(",").map(Number); //get bingo numbers
+inputarray.splice(0,2); //remove first 2 elements of inputarray
 
-//Copy array for oxygen processing
-const oxygen = inputarray.slice();
+const LastPlayedNumbers = [] //Array stores last played numbers
 
-let p = '^1'; //search pattern for regex
-let re = new RegExp(p); //create regex search pattern
-let i = 0; //variable for index used by findIndex
-
-//loop until only 1 bit number remains
-while (oxygen.length > 1) {
-
-    i = oxygen.findIndex(v => re.test(v)) //search in array with regex pattern
-
-    //if returned index is smaller/equal then array length then remove all bit numbers with 0 at the nth position
-    if (i*2 <= oxygen.length){
-        oxygen.splice(0,i); // removes bit numbers
-        p = p.replace(/.$/,'11') // modify search pattern for next loop run
+//will play all numbers for given board until it wins and returns the index of the last played number
+function boardProcessing(b){
+    //0: Count of matches in Row 1, 1: Count of matches in row 2, .... 5: Count of matches in column 1, ......
+    const result = [0,0,0,0,0,0,0,0,0,0];
+    let LastPlayedNumber = 0;
+    for (let i=0;i<numbers.length;i++){
+        for (let r=0;r<5;r++){
+            let row = inputarray[b*6+r].trim().split(/\s+/).map(Number);
+            let c = row.indexOf(numbers[i]);
+            if (c > -1){
+                result[r] += 1;
+                result[c+5] += 1;
+                if (result[r] == 5 || result[c+5] == 5){
+                    LastPlayedNumber = i;
+                    break;
+                }
+            }
+        }
+        if (LastPlayedNumber !== 0){
+            break;
+        }
     }
-    //if returned index is greater then array length then remove all bit numbers with 1 at the nth position
-    else {
-        //save bits with 0
-        oxygen.splice(i,oxygen.length-i); // removes bit numbers
-        // p = p+'0';
-        p = p.replace(/.$/,'01') // modify search pattern for next loop run
+
+    return LastPlayedNumber;
+    ;
+
+}
+
+function sumUnmarkedNumber(b, n){
+    b -= 1;//because b is not null based
+    let sum = 0;
+    markNmb = numbers.splice(0,n+1); //get all played numbers of this board
+    for (let r=0;r<5;r++){
+        let row = inputarray[b*6+r].trim().split(/\s+/).map(Number);
+        for (c=0;c<row.length;c++){
+            if (!markNmb.includes(row[c])) {
+                sum += row[c];
+            }
+        }
     }
-   
-    re = new RegExp(p);
+    return sum;
 }
 
 
-//following code for co2 processing is the same like for oxygen above but if condition using ">" because we are searching for least common value
-const co2 = inputarray.slice();
-
-p = '^1';
-re = new RegExp(p);
-i = 0;
-l = co2.length;
-while (co2.length > 1) {
-
-    i = co2.findIndex(v => re.test(v))
-    if (i*2 > co2.length){
-        
-        co2.splice(0,i);
-        p = p.replace(/.$/,'11')
-    }
-    else {
-        
-        co2.splice(i,co2.length-i);
-        // p = p+'0';
-        p = p.replace(/.$/,'01')
-    }
-   
-    re = new RegExp(p);
+for (let b=0;b<(inputarray.length+1)/6;b++){
+    //processing given board
+    LastPlayedNumbers.push(boardProcessing(b));
 }
 
+//get highest index of played numbers
+let hi = Math.max.apply(Math,LastPlayedNumbers);
+//get last played Number
+let lastPlayedNumber = numbers[hi];
+//get board which wins last
+let lastBoard = LastPlayedNumbers.indexOf(hi)+1;
+//get sum of all unmarked numbers ob last winner board
+let sum = sumUnmarkedNumber(lastBoard,Math.max.apply(Math,LastPlayedNumbers));
+//multiply sum with last played number
+let res = sum * lastPlayedNumber
 
-console.log("Oxygen rate(binary): " + oxygen);
-console.log("Oxygen rate(decimal): " + parseInt(oxygen,2));
-console.log("CO2 rate(binary): " + co2);
-console.log("CO2 rate(decimal): " + parseInt(co2,2));
-console.log("Result(life support rate): " + parseInt(oxygen,2) * parseInt(co2,2));
 
-
-
-
-
+console.log(`Last board is ${lastBoard} -- sum of unmarked numbers is ${res}`);
