@@ -3,7 +3,7 @@ var fs = require("fs");
 
 const inputarray = fs  
     .readFileSync(path.resolve(__dirname, "input.txt"), "utf-8")  
-    .split('\n')
+    .split(/\r?\n/)
     // .map(Number);
 
 
@@ -21,7 +21,7 @@ rules.set("C Z", 6);
 let totalscore = 0;
 
 inputarray.forEach(e => {
-    totalscore += rules.get(e.slice(0,3));
+    totalscore += rules.get(e);
 });
 
 console.log(`Total score: ${totalscore}`);
