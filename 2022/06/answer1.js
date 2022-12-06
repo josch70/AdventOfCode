@@ -15,8 +15,8 @@ let count = 4; //Number of processed characters
 
 
 for (let i=0;i<inputarray[0].length;i++){
-    const four = inputarray[0].slice(i,4+i); //returns array of 4 characters from input in a loop
-    let dupl = hasDuplicates(four); //checks if array of 4 characters hast duplicates
+    const marker = inputarray[0].slice(i,4+i); //returns array of 4 characters from input in a loop
+    let dupl = hasDuplicates(marker); //checks if array of 4 characters hast duplicates
     if (!dupl) {
         console.log(`${count} characters needs to be processed.`); //if array of 4 characters has no duplicates break loop and print result
         break;
